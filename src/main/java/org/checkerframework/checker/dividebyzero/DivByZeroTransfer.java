@@ -77,6 +77,7 @@ public class DivByZeroTransfer extends CFTransfer {
   private AnnotationMirror refineLhsOfComparison(
       Comparison operator, AnnotationMirror lhs, AnnotationMirror rhs) {
     // TODO
+
     return lhs;
   }
 
@@ -98,6 +99,81 @@ public class DivByZeroTransfer extends CFTransfer {
   private AnnotationMirror arithmeticTransfer(
       BinaryOperator operator, AnnotationMirror lhs, AnnotationMirror rhs) {
     // TODO
+    
+    AnnotationMirror zero = reflect(Zero.class); 
+    AnnotationMirror nonZero = reflect(NonZero.class); 
+    if (equal(lhs, bottom()) || equal(rhs, bottom())) {
+      return bottom();
+    }
+
+    switch (operator) {
+        case PLUS:
+           if (equal(lhs, top()) || equal(rhs, top())) {
+             return top();
+           }
+
+           if (equal(lhs, nonZero) || equal(rhs, nonZero)) {
+             return nonZero;
+           }
+
+	   return zero;
+            
+        case MINUS:
+           if (equal(lhs, top()) || equal(rhs, top())) {
+             return top();
+           }
+
+           if (equal(lhs, nonZero) && equal(rhs, nonZero)) {
+             return top();
+           } 
+
+           if (equal(lhs, nonZero) || equal(rhs, nonZero)) {
+             return nonZero;
+           } 
+
+	   return zero;
+
+        case TIMES:
+           if (equal(lhs, zero) || equal(rhs, zero)) {
+             return zero;
+           }
+
+           if (equal(lhs, nonZero) && equal(rhs, nonZero)) {
+             return nonZero;
+           } 
+
+	   return top();
+	
+        case DIVIDE:
+           if (equal(rhs, zero)) {
+             return bottom();
+           }
+
+	   // maybe
+           if (equal(rhs, top())) {
+             return bottom();
+           }
+
+	   return lhs;
+	   
+        case MOD:
+           if (equal(rhs, zero)) {
+             return bottom();
+           }
+
+	   // maybe
+           if (equal(rhs, top())) {
+             return bottom();
+           }
+
+           if (equal(lhs, nonZero) && equal(rhs, nonZero)) {
+             return top();
+           }
+
+	   return lhs;
+    
+    }
+
     return top();
   }
 
