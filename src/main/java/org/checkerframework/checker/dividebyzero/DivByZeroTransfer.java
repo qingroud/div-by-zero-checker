@@ -77,6 +77,51 @@ public class DivByZeroTransfer extends CFTransfer {
   private AnnotationMirror refineLhsOfComparison(
       Comparison operator, AnnotationMirror lhs, AnnotationMirror rhs) {
     // TODO
+    AnnotationMirror zero = reflect(Zero.class); 
+    AnnotationMirror nonZero = reflect(NonZero.class); 
+    if (equal(lhs, bottom()) || equal(rhs, bottom())) {
+      return bottom();
+    }
+
+    switch (operator) {
+      case NE:
+        if (equal(lhs, zero)) {
+          return glb(rhs, nonZero);
+        } 
+
+        if (equal(rhs, zero)) {
+          return glb(lhs, nonZero);
+        }
+
+        if (equal(lhs, nonZero)) {
+          return glb(rhs, zero);
+        } 
+
+        if (equal(rhs, nonZero)) {
+          return glb(lhs, zero);
+        }
+        return lhs;
+      case EQ:
+        return glb(lhs, rhs);
+      case GE:
+        // if (equal(rhs, zero) || equal(lhs, zero)) {
+        //   return top();
+        // }
+
+        return top();
+      case GT:
+        if (equal(lhs, zero) || equal(rhs, zero)) {
+          return nonZero;
+        }
+        return top();
+      case LE:
+        return top();
+      case LT:
+        if (equal(lhs, zero) || equal(rhs, zero)) {
+          return nonZero;
+        }
+        return top();
+    }
 
     return lhs;
   }
@@ -116,7 +161,7 @@ public class DivByZeroTransfer extends CFTransfer {
              return nonZero;
            }
 
-	   return zero;
+	         return zero;
             
         case MINUS:
            if (equal(lhs, top()) || equal(rhs, top())) {
@@ -131,7 +176,7 @@ public class DivByZeroTransfer extends CFTransfer {
              return nonZero;
            } 
 
-	   return zero;
+	         return zero;
 
         case TIMES:
            if (equal(lhs, zero) || equal(rhs, zero)) {
@@ -142,35 +187,35 @@ public class DivByZeroTransfer extends CFTransfer {
              return nonZero;
            } 
 
-	   return top();
+	         return top();
 	
         case DIVIDE:
            if (equal(rhs, zero)) {
              return bottom();
            }
 
-	   // maybe
+	         // maybe
            if (equal(rhs, top())) {
-             return bottom();
+             return top();
            }
 
-	   return lhs;
+	         return lhs;
 	   
         case MOD:
            if (equal(rhs, zero)) {
              return bottom();
            }
 
-	   // maybe
+	         // maybe
            if (equal(rhs, top())) {
-             return bottom();
+             return top();
            }
 
            if (equal(lhs, nonZero) && equal(rhs, nonZero)) {
              return top();
            }
 
-	   return lhs;
+	         return lhs;
     
     }
 
